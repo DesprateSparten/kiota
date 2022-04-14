@@ -28,8 +28,10 @@ namespace Kiota.Builder.Refiners {
             ReplaceReservedNames(
                 generatedCode,
                 new CSharpReservedNamesProvider(), x => $"@{x.ToFirstCharacterUpperCase()}",
-                new HashSet<Type>{ typeof(CodeClass), typeof(ClassDeclaration), typeof(CodeProperty), typeof(CodeUsing), typeof(CodeNamespace), typeof(CodeMethod) }
-            ); 
+                new HashSet<Type>{ typeof(CodeClass), typeof(ClassDeclaration), typeof(CodeProperty), typeof(CodeUsing), typeof(CodeNamespace), typeof(CodeMethod), typeof(CodeEnum) }
+            );
+            // Replace the reserved types
+            ReplaceReservedModelTypes(generatedCode, new CSharpReservedTypesProvider(), x => $"{x}Object");
             DisambiguatePropertiesWithClassNames(generatedCode);
             AddConstructorsForDefaultValues(generatedCode, false);
             AddSerializationModulesImport(generatedCode);
@@ -100,6 +102,8 @@ namespace Kiota.Builder.Refiners {
                 "Microsoft.Kiota.Abstractions.Store",  "IBackingStoreFactory", "IBackingStoreFactorySingleton"),
             new (x => x is CodeProperty prop && prop.IsOfKind(CodePropertyKind.BackingStore),
                 "Microsoft.Kiota.Abstractions.Store",  "IBackingStore", "IBackedModel", "BackingStoreFactorySingleton" ),
+            new (x => x is CodeProperty prop && prop.IsOfKind(CodePropertyKind.QueryParameter) && !string.IsNullOrEmpty(prop.SerializationName),
+                "Microsoft.Kiota.Abstractions", "QueryParameterAttribute"),
         };
         protected static void CapitalizeNamespacesFirstLetters(CodeElement current) {
             if(current is CodeNamespace currentNamespace)
@@ -122,6 +126,7 @@ namespace Kiota.Builder.Refiners {
                                                     .Union(new CodeTypeBase[] { currentMethod.ReturnType })
                                                     .ToArray());
         }
+
         private static readonly Dictionary<string, (string, CodeUsing)> DateTypesReplacements = new(StringComparer.OrdinalIgnoreCase)
         {
             {

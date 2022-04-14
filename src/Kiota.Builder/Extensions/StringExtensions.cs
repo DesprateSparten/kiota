@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -66,8 +67,6 @@ namespace Kiota.Builder.Extensions {
             var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
             return hash.Select(b => b.ToString("x2")).Aggregate((x, y) => x + y);
         }
-        public static string SanitizeUrlTemplateParameterName(this string original) =>
-            original?.Replace('-', '_');
         /// <summary>
         /// For Php strings, having double quotes around strings might cause an issue
         /// if the string contains valid variable name.
@@ -112,5 +111,13 @@ namespace Kiota.Builder.Extensions {
 
             return original;
         }
+
+        /// <summary>
+        /// Cleanup the XML string
+        /// </summary>
+        /// <param name="original">The original string</param>
+        /// <returns></returns>
+        public static string CleanupXMLString(this string original) 
+            => SecurityElement.Escape(original);
     }
 }

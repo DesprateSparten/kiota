@@ -115,7 +115,7 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
         new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.RequestExecutor),
             "com.microsoft.kiota.serialization", "Parsable", "ParsableFactory"),
         new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.Deserializer),
-            "java.util.function", "BiConsumer"),
+            "java.util.function", "Consumer"),
         new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.Deserializer),
             "java.util", "HashMap", "Map"),
         new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.ClientConstructor) &&
@@ -127,6 +127,8 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
                 x is CodeMethod method && "decimal".Equals(method.ReturnType.Name, StringComparison.OrdinalIgnoreCase) ||
                 x is CodeParameter para && "decimal".Equals(para.Type.Name, StringComparison.OrdinalIgnoreCase),
             "java.math", "BigDecimal"),
+        new (x => x is CodeProperty prop && prop.IsOfKind(CodePropertyKind.QueryParameter) && !string.IsNullOrEmpty(prop.SerializationName),
+                "com.microsoft.kiota", "QueryParameter"),
     };
     private static void CorrectPropertyType(CodeProperty currentProperty) {
         if(currentProperty.IsOfKind(CodePropertyKind.RequestAdapter)) {
@@ -165,7 +167,7 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
                     x.Type.Name = x.Type.Name[1..];
             });
         else if(currentMethod.IsOfKind(CodeMethodKind.Deserializer)) {
-            currentMethod.ReturnType.Name = $"Map<String, BiConsumer<T, ParseNode>>";
+            currentMethod.ReturnType.Name = $"Map<String, Consumer<ParseNode>>";
             currentMethod.Name = "getFieldDeserializers";
         }
         else if(currentMethod.IsOfKind(CodeMethodKind.ClientConstructor, CodeMethodKind.Constructor, CodeMethodKind.RawUrlConstructor)) {

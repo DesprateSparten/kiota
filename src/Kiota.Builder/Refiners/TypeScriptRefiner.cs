@@ -14,6 +14,12 @@ public class TypeScriptRefiner : CommonLanguageRefiner, ILanguageRefiner
         RemoveCancellationParameter(generatedCode);
         CorrectCoreType(generatedCode, CorrectMethodType, CorrectPropertyType, CorrectImplements);
         CorrectCoreTypesForBackingStore(generatedCode, "BackingStoreFactorySingleton.instance.createBackingStore()");
+        AddInnerClasses(generatedCode, 
+            true, 
+            string.Empty,
+            true);
+        DisableActionOf(generatedCode, 
+            CodeParameterKind.QueryParameter);
         AddPropertiesAndMethodTypesImports(generatedCode, true, true, true);
         AliasUsingsWithSameSymbol(generatedCode);
         AddParsableImplementsForModelClasses(generatedCode, "Parsable");
@@ -76,6 +82,9 @@ public class TypeScriptRefiner : CommonLanguageRefiner, ILanguageRefiner
         AddStaticMethodsUsingsForRequestExecutor(
             generatedCode,
             factoryNameCallbackFromType
+        );
+        AddQueryParameterMapperMethod(
+            generatedCode
         );
     }
     private static readonly CodeUsingDeclarationNameComparer usingComparer = new();
@@ -164,7 +173,7 @@ public class TypeScriptRefiner : CommonLanguageRefiner, ILanguageRefiner
         else if(currentMethod.IsOfKind(CodeMethodKind.Serializer))
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.Serializer) && x.Type.Name.StartsWith("i", StringComparison.OrdinalIgnoreCase)).ToList().ForEach(x => x.Type.Name = x.Type.Name[1..]);
         else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
-            currentMethod.ReturnType.Name = $"Record<string, (item: T, node: ParseNode) => void>";
+            currentMethod.ReturnType.Name = $"Record<string, (node: ParseNode) => void>";
         else if (currentMethod.IsOfKind(CodeMethodKind.ClientConstructor, CodeMethodKind.Constructor))
         {
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.RequestAdapter, CodeParameterKind.BackingStore))
