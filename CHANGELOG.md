@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for enum options descriptions (C#/Go/Java/TypeScript). [#90](https://github.com/microsoft/kiota/issues/90)
+- Added `platform` configuration option [#1473](https://github.com/microsoft/kiota/pull/1473)
 
 ### Changed
+- Updated primitive int and float type mapping for PHP [#1473](https://github.com/microsoft/kiota/pull/1473)
 
 ## [0.1.3] - 2022-05-06
 
@@ -60,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug with special characters in query parameters names. [#1445](https://github.com/microsoft/kiota/issues/1445)
 - Fixed a bug where complex types path parameters would fail to generate.
 - Fixed a bug where Go serialization/deserialization method would generate invalid accessor names.
-- Updated primitive type mapping for PHP [#1473](https://github.com/microsoft/kiota/pull/1473)
 
 ## [0.0.22] - 2022-04-08
 
