@@ -51,6 +51,8 @@ namespace Kiota.Builder.Refiners
             AddParsableImplementsForModelClasses(generatedCode, "Parsable");
             ReplaceBinaryByNativeType(generatedCode, "StreamInterface", "Psr\\Http\\Message", true);
             MoveClassesWithNamespaceNamesUnderNamespace(generatedCode);
+            if (_configuration.TargetArchitecture == GenerationConfiguration.PlatformArchitecture.Bit32)
+                ConvertInt64TypesToFloat(generatedCode);
         }
         private static readonly Dictionary<string, (string, CodeUsing)> DateTypesReplacements = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -188,6 +190,23 @@ namespace Kiota.Builder.Refiners
         }
         private static void CorrectImplements(ProprietableBlockDeclaration block) {
             block.Implements.Where(x => "IAdditionalDataHolder".Equals(x.Name, StringComparison.OrdinalIgnoreCase)).ToList().ForEach(x => x.Name = x.Name[1..]); // skipping the I
+        }
+
+        private static void ConvertInt64TypesToFloat(CodeElement codeElement)
+        {
+            var int64Type = "int64";
+            var replacement = "float";
+            if (codeElement is CodeProperty codeProperty && codeProperty.Type != null && codeProperty.Type.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
+                codeProperty.Type.Name = replacement;
+            if (codeElement is CodeMethod codeMethod)
+            {
+                if (codeMethod.ReturnType != null && codeMethod.ReturnType.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
+                    codeMethod.ReturnType.Name = replacement;
+                foreach (CodeParameter parameter in codeMethod.Parameters)
+                    if (parameter.Type != null && parameter.Type.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
+                        parameter.Type.Name = replacement;
+            }
+            CrawlTree(codeElement, ConvertInt64TypesToFloat);
         }
 
         private static void AliasUsingWithSameSymbol(CodeElement currentElement) {

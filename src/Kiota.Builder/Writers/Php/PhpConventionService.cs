@@ -62,8 +62,7 @@ namespace Kiota.Builder.Writers.Php
                 "boolean" => "bool",
                 "double" => "float",
                 "decimal" or "byte" => "string",
-                "integer" or "int32" or "sbyte" => "int",
-                "int64" => (Environment.Is64BitOperatingSystem) ? "int": "float",
+                "integer" or "int32" or "int64" or "sbyte" => "int",
                 "object" or "string" or "array" or "float" or "void" => typeName.ToLowerInvariant(),
                 "binary" => "StreamInterface",
                 _ => typeName.ToFirstCharacterUpperCase()

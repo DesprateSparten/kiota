@@ -22,6 +22,7 @@ kiota (--openapi | -d) <path>
       [(--serializer | -s) <classes>]
       [(--deserializer | --ds) <classes>]
       [--clean-output | --co]
+      [(--platform | -p) <architecture>]
 ```
 
 ## Mandatory parameters
@@ -169,6 +170,21 @@ One or more module names that implements `ISerializationWriterFactory`.
 ```shell
 kiota --serializer Contoso.Json.CustomSerializer
 ```
+
+
+### `--platform (-p)`
+
+The target platform processor architecture for the generated code files. Defaults to `bit64`.
+
+#### Accepted values
+
+- `bit64`
+- `bit32`
+
+```shell
+kiota --platform bit64
+```
+
 
 ## Examples
 
