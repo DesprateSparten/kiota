@@ -30,7 +30,7 @@ namespace Kiota.Builder {
             GenerationLanguage.TypeScript
         };
         public bool CleanOutput { get; set;}
-        public PlatformArchitecture TargetArchitecture { get; set; } = PlatformArchitecture.Bit64;
+        public PlatformArchitecture Platform { get; set; } = PlatformArchitecture.Bit64;
         public enum PlatformArchitecture
         {
             Bit64,

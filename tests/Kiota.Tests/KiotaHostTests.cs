@@ -39,5 +39,9 @@ namespace Kiota.Tests
         public async Task AcceptsSerializers() {
             await new KiotaHost().GetRootCommand().InvokeAsync(new string[] { "-s", "Kiota.Tests.TestData.TestSerializer" });
         }
+        [Fact]
+        public async Task ThrowsOnInvalidPlatformArchitecture() {
+            await new KiotaHost().GetRootCommand().InvokeAsync(new string[] { "-p", "64-Bit" });
+        }
     }
 }

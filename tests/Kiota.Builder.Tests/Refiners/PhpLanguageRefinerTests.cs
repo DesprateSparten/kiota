@@ -88,9 +88,28 @@ namespace Kiota.Builder.Refiners.Tests
         }
 
         [Fact]
-        public void TestCanReturnCorrectAccess()
+        public void ReplacesInt64On32BitTarget()
         {
+            var property = new CodeProperty() { Name = "prop", Type = new CodeType() { Name = "int64"}};
+            var parentClass = new CodeClass() { Name = "model", Kind = CodeClassKind.Model };
+            root.AddClass(parentClass).First().AddProperty(property);
+            ILanguageRefiner.Refine(new GenerationConfiguration() { Language =  GenerationLanguage.PHP }, root);
+            Assert.Equal("int64", property.Type.Name);
             
+            ILanguageRefiner.Refine(new GenerationConfiguration() { Language =  GenerationLanguage.PHP, Platform = GenerationConfiguration.PlatformArchitecture.Bit32}, root);
+            Assert.Equal("float", property.Type.Name);
+            
+            var param = new CodeParameter() { Name = "param", Type = new CodeType() { Name = "int64"}};
+            var method = new CodeMethod() { Name = "test", ReturnType = new CodeType() { Name = "int64" }};
+            method.AddParameter(param);
+            parentClass.AddMethod(method);
+            ILanguageRefiner.Refine(new GenerationConfiguration() { Language =  GenerationLanguage.PHP }, root);
+            Assert.Equal("int64", param.Type.Name);
+            Assert.Equal("int64", method.ReturnType.Name);
+            
+            ILanguageRefiner.Refine(new GenerationConfiguration() { Language =  GenerationLanguage.PHP, Platform = GenerationConfiguration.PlatformArchitecture.Bit32}, root);
+            Assert.Equal("float", param.Type.Name);
+            Assert.Equal("float", method.ReturnType.Name);
         }
     }
 }

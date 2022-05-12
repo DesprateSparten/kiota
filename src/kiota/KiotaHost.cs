@@ -75,9 +75,9 @@ namespace Kiota {
             var cleanOutputOption = new Option<bool>("--clean-output", () => false, "Removes all files from the output directory before generating the code files.");
             cleanOutputOption.AddAlias("--co");
 
-            var targetArchitectureOption = new Option<GenerationConfiguration.PlatformArchitecture>("--platform", () => GenerationConfiguration.PlatformArchitecture.Bit64, "Target platform processor architecture for the generated code files");
-            targetArchitectureOption.AddAlias("-p");
-            AddEnumValidator(targetArchitectureOption, "platform");
+            var platformOption = new Option<GenerationConfiguration.PlatformArchitecture>("--platform", () => GenerationConfiguration.PlatformArchitecture.Bit64, "Target platform processor architecture for the generated code files");
+            platformOption.AddAlias("-p");
+            AddEnumValidator(platformOption, "platform");
                 
             var command = new RootCommand {
                 descriptionOption,
@@ -90,17 +90,17 @@ namespace Kiota {
                 serializerOption,
                 deserializerOption,
                 cleanOutputOption,
-                targetArchitectureOption
+                platformOption
             };
             command.Description = "OpenAPI-based HTTP Client SDK code generator";
-            command.SetHandler<string, GenerationLanguage, string, bool, string, LogLevel, string, List<string>, List<string>, bool, GenerationConfiguration.PlatformArchitecture, CancellationToken>(HandleCommandCall, outputOption, languageOption, descriptionOption, backingStoreOption, classOption, logLevelOption, namespaceOption, serializerOption, deserializerOption, cleanOutputOption, targetArchitectureOption);
+            command.SetHandler<string, GenerationLanguage, string, bool, string, LogLevel, string, List<string>, List<string>, bool, GenerationConfiguration.PlatformArchitecture, CancellationToken>(HandleCommandCall, outputOption, languageOption, descriptionOption, backingStoreOption, classOption, logLevelOption, namespaceOption, serializerOption, deserializerOption, cleanOutputOption, platformOption);
             return command;
         }
         private void AssignIfNotNullOrEmpty(string input, Action<GenerationConfiguration, string> assignment) {
             if (!string.IsNullOrEmpty(input))
                 assignment.Invoke(Configuration, input);
         }
-        private async Task<int> HandleCommandCall(string output, GenerationLanguage language, string openapi, bool backingstore, string classname, LogLevel loglevel, string namespacename, List<string> serializer, List<string> deserializer, bool cleanOutput, GenerationConfiguration.PlatformArchitecture targetArchitecture, CancellationToken cancellationToken) {
+        private async Task<int> HandleCommandCall(string output, GenerationLanguage language, string openapi, bool backingstore, string classname, LogLevel loglevel, string namespacename, List<string> serializer, List<string> deserializer, bool cleanOutput, GenerationConfiguration.PlatformArchitecture platform, CancellationToken cancellationToken) {
             AssignIfNotNullOrEmpty(output, (c, s) => c.OutputPath = s);
             AssignIfNotNullOrEmpty(openapi, (c, s) => c.OpenAPIFilePath = s);
             AssignIfNotNullOrEmpty(classname, (c, s) => c.ClientClassName = s);
@@ -119,7 +119,7 @@ namespace Kiota {
             Configuration.OpenAPIFilePath = GetAbsolutePath(Configuration.OpenAPIFilePath);
             Configuration.OutputPath = GetAbsolutePath(Configuration.OutputPath);
             Configuration.CleanOutput = cleanOutput;
-            Configuration.TargetArchitecture = targetArchitecture;
+            Configuration.Platform = platform;
 
             var logger = LoggerFactory.Create((builder) => {
                 builder

@@ -51,7 +51,7 @@ namespace Kiota.Builder.Refiners
             AddParsableImplementsForModelClasses(generatedCode, "Parsable");
             ReplaceBinaryByNativeType(generatedCode, "StreamInterface", "Psr\\Http\\Message", true);
             MoveClassesWithNamespaceNamesUnderNamespace(generatedCode);
-            if (_configuration.TargetArchitecture == GenerationConfiguration.PlatformArchitecture.Bit32)
+            if (_configuration.Platform == GenerationConfiguration.PlatformArchitecture.Bit32)
                 ConvertInt64TypesToFloat(generatedCode);
         }
         private static readonly Dictionary<string, (string, CodeUsing)> DateTypesReplacements = new(StringComparer.OrdinalIgnoreCase)
