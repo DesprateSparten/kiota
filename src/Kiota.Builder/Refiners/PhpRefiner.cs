@@ -194,17 +194,17 @@ namespace Kiota.Builder.Refiners
 
         private static void ConvertInt64TypesToFloat(CodeElement codeElement)
         {
-            var int64Type = "int64";
             var replacement = "float";
-            if (codeElement is CodeProperty codeProperty && codeProperty.Type != null && codeProperty.Type.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
+            if (codeElement is CodeProperty codeProperty && codeProperty.Type != null && codeProperty.Type.Name.Equals("int64", StringComparison.OrdinalIgnoreCase))
                 codeProperty.Type.Name = replacement;
             if (codeElement is CodeMethod codeMethod)
             {
-                if (codeMethod.ReturnType != null && codeMethod.ReturnType.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
+                if (codeMethod.ReturnType != null && codeMethod.ReturnType.Name.Equals("int64", StringComparison.OrdinalIgnoreCase))
                     codeMethod.ReturnType.Name = replacement;
-                foreach (CodeParameter parameter in codeMethod.Parameters)
-                    if (parameter.Type != null && parameter.Type.Name.Equals(int64Type, StringComparison.OrdinalIgnoreCase))
-                        parameter.Type.Name = replacement;
+                codeMethod.Parameters.Select(parameter => parameter.Type)
+                                    .Where((paramType) => (paramType != null) && String.Equals("int64", paramType.Name, StringComparison.OrdinalIgnoreCase))
+                                    .ToList()
+                                    .ForEach(paramType => paramType.Name = replacement);
             }
             CrawlTree(codeElement, ConvertInt64TypesToFloat);
         }
