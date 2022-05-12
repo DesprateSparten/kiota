@@ -12,7 +12,6 @@ namespace Kiota.Builder.Writers.Shell
     {
         private static Regex delimitedRegex = new Regex("(?<=[a-z])[-_\\.]+([A-Za-z])", RegexOptions.Compiled);
         private static Regex camelCaseRegex = new Regex("(?<=[a-z])([A-Z])", RegexOptions.Compiled);
-        private static Regex identifierRegex = new Regex("(?:[-_\\.]([a-zA-Z]))", RegexOptions.Compiled);
         private static Regex uppercaseRegex = new Regex("([A-Z])", RegexOptions.Compiled);
         private const string cancellationTokenParamType = "CancellationToken";
         private const string cancellationTokenParamName = "cancellationToken";
@@ -288,7 +287,14 @@ namespace Kiota.Builder.Writers.Shell
                 writer.WriteLine("};");
                 writer.WriteLine($"{optionName}.IsRequired = {isRequired.ToString().ToFirstCharacterLowerCase()};");
                 writer.WriteLine($"command.AddOption({optionName});");
-                availableOptions.Add(optionName);
+                if (optionType == "bool?")
+                {
+                    availableOptions.Add($"new NullableBooleanBinding({optionName})");
+                }
+                else
+                {
+                    availableOptions.Add(optionName);
+                }
             }
 
             return availableOptions;
@@ -351,26 +357,29 @@ namespace Kiota.Builder.Writers.Shell
             }
             else if (codeElement.OriginalIndexer != null)
             {
+                writer.WriteLine($"var command = new Command(\"item\");");
                 var targetClass = conventions.GetTypeString(codeElement.OriginalIndexer.ReturnType, codeElement);
                 var builderMethods = (codeElement.OriginalIndexer.ReturnType as CodeType).TypeDefinition.GetChildElements(true).OfType<CodeMethod>()
                     .Where(m => m.IsOfKind(CodeMethodKind.CommandBuilder))
                     .OrderBy(m => m.Name);
                 conventions.AddRequestBuilderBody(parent, targetClass, writer, prefix: "var builder = ", pathParameters: codeElement.Parameters.Where(x => x.IsOfKind(CodeParameterKind.Path)));
-                writer.WriteLine("var commands = new List<Command>();");
 
                 foreach (var method in builderMethods)
                 {
                     if (method.ReturnType.IsCollection)
                     {
-                        writer.WriteLine($"commands.AddRange(builder.{method.Name}());");
+                        writer.WriteLine($"foreach (var cmd in builder.{method.Name}()) {{");
+                        writer.IncreaseIndent();
+                        writer.WriteLine($"command.AddCommand(cmd);");
+                        writer.CloseBlock();
                     }
                     else
                     {
-                        writer.WriteLine($"commands.Add(builder.{method.Name}());");
+                        writer.WriteLine($"command.AddCommand(builder.{method.Name}());");
                     }
                 }
 
-                writer.WriteLine("return commands;");
+                writer.WriteLine("return command;");
             }
         }
 
@@ -409,7 +418,7 @@ namespace Kiota.Builder.Writers.Shell
                 }
             }
 
-            var parametersList = new CodeParameter[] { requestParams.requestBody, requestParams.queryString, requestParams.headers, requestParams.options }
+            var parametersList = new CodeParameter[] { requestParams.requestBody, requestParams.requestConfiguration }
                                 .Select(x => x?.Name).Where(x => x != null).DefaultIfEmpty().Aggregate((x, y) => $"{x}, {y}");
             var separator = string.IsNullOrWhiteSpace(parametersList) ? "" : ", ";
             WriteRequestInformation(writer, generatorMethod, parametersList, separator);
@@ -453,20 +462,22 @@ namespace Kiota.Builder.Writers.Shell
                         indentParam = false;
                     }
 
-                    writer.Write($"q.{param.Name.ToFirstCharacterUpperCase()} = {paramName};", indentParam);
+                    writer.Write($"q.QueryParameters.{param.Name.ToFirstCharacterUpperCase()} = {paramName};", indentParam);
 
                     writer.WriteLine();
                 }
                 writer.CloseBlock("});");
 
-                foreach (var paramName in generatorMethod.PathQueryAndHeaderParameters.Where(p => p.IsOfKind(CodeParameterKind.Path)).Select(p => p.Name))
+                foreach (var param in generatorMethod.PathQueryAndHeaderParameters.Where(p => p.IsOfKind(CodeParameterKind.Path)))
                 {
-                    writer.WriteLine($"requestInfo.PathParameters.Add(\"{paramName}\", {NormalizeToIdentifier(paramName).ToFirstCharacterLowerCase()});");
+                    var paramName = (string.IsNullOrEmpty(param.SerializationName) ? param.Name : param.SerializationName).SanitizeParameterNameForUrlTemplate();
+                    writer.WriteLine($"requestInfo.PathParameters.Add(\"{paramName}\", {NormalizeToIdentifier(param.Name).ToFirstCharacterLowerCase()});");
                 }
 
-                foreach (var paramName in generatorMethod.PathQueryAndHeaderParameters.Where(p => p.IsOfKind(CodeParameterKind.Headers)).Select(p => p.Name))
+                foreach (var param in generatorMethod.PathQueryAndHeaderParameters.Where(p => p.IsOfKind(CodeParameterKind.Headers)))
                 {
-                    writer.WriteLine($"requestInfo.Headers[\"{paramName}\"] = {NormalizeToIdentifier(paramName).ToFirstCharacterLowerCase()};");
+                    var paramName = string.IsNullOrEmpty(param.SerializationName) ? param.Name : param.SerializationName;
+                    writer.WriteLine($"requestInfo.Headers[\"{paramName}\"] = {NormalizeToIdentifier(param.Name).ToFirstCharacterLowerCase()};");
                 }
             }
             else
@@ -482,7 +493,7 @@ namespace Kiota.Builder.Writers.Shell
         /// <returns></returns>
         private static string NormalizeToIdentifier(string input)
         {
-            return identifierRegex.Replace(input, m => m.Groups[1].Value.ToUpper());
+            return input.ToCamelCase("-", "_", ".");
         }
 
         /// <summary>
