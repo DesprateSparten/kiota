@@ -834,7 +834,7 @@ public class KiotaBuilder
             var shortestNamespace = rootNamespace.FindNamespaceByName(shortestNamespaceName);
             if(shortestNamespace == null)
                 shortestNamespace = rootNamespace.AddNamespace(shortestNamespaceName);
-            className = (currentSchema.GetSchemaTitle() ?? currentNode.GetClassName(operation: operation, schema: schema)).CleanupSymbolName();
+            className = (currentSchema.GetSchemaName() ?? currentNode.GetClassName(operation: operation, schema: schema)).CleanupSymbolName();
             codeDeclaration = AddModelDeclarationIfDoesntExist(currentNode, currentSchema, className, shortestNamespace, codeDeclaration as CodeClass, !currentSchema.IsReferencedSchema());
         }
 
@@ -877,7 +877,7 @@ public class KiotaBuilder
             var shortestNamespace = rootNamespace.FindNamespaceByName(shortestNamespaceName);
             if(shortestNamespace == null)
                 shortestNamespace = rootNamespace.AddNamespace(shortestNamespaceName);
-            var className = currentSchema.GetSchemaTitle().CleanupSymbolName();
+            var className = currentSchema.GetSchemaName().CleanupSymbolName();
             if (string.IsNullOrEmpty(className))
                 if(GetPrimitiveType(currentSchema) is CodeType primitiveType && !string.IsNullOrEmpty(primitiveType.Name)) {
                     unionType.AddType(primitiveType);
@@ -989,7 +989,7 @@ public class KiotaBuilder
             var parentSchema = referencedAllOfs.FirstOrDefault();
             if(parentSchema != null) {
                 var parentClassNamespace = GetShortestNamespace(currentNamespace, parentSchema);
-                inheritsFrom = AddModelDeclarationIfDoesntExist(currentNode, parentSchema, parentSchema.GetSchemaTitle().CleanupSymbolName(), parentClassNamespace, null, !parentSchema.IsReferencedSchema()) as CodeClass;
+                inheritsFrom = AddModelDeclarationIfDoesntExist(currentNode, parentSchema, parentSchema.GetSchemaName().CleanupSymbolName(), parentClassNamespace, null, !parentSchema.IsReferencedSchema()) as CodeClass;
             }
         }
         var newClass = currentNamespace.AddClass(new CodeClass {
@@ -1054,7 +1054,7 @@ public class KiotaBuilder
                                 .Properties
                                 .Select(x => {
                                     var propertySchema = x.Value;
-                                    var className = propertySchema.GetSchemaTitle().CleanupSymbolName();
+                                    var className = propertySchema.GetSchemaName().CleanupSymbolName();
                                     if(string.IsNullOrEmpty(className))
                                         className = $"{model.Name}_{x.Key}";
                                     var shortestNamespaceName = GetModelsNamespaceNameFromReferenceId(propertySchema.Reference?.Id);
