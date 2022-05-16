@@ -73,6 +73,8 @@ namespace Kiota.Builder.Refiners {
                 "Microsoft.Kiota.Abstractions", "IRequestAdapter"),
             new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.RequestGenerator),
                 "Microsoft.Kiota.Abstractions", "Method", "RequestInformation", "IRequestOption"),
+            new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.RequestGenerator),
+                "Microsoft.Kiota.Abstractions.Extensions", "IDictionaryExtensions"),
             new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.RequestExecutor),
                 "Microsoft.Kiota.Abstractions", "IResponseHandler"),
             new (x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.Serializer),
