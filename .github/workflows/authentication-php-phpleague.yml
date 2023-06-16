@@ -1,4 +1,4 @@
-﻿name: PHP Authentication PHPLeague
+name: PHP Authentication PHPLeague
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
       relativePath: ./authentication/php/phpleague
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3.5.3
       - name: Setup PHP and Xdebug for Code Coverage report
         uses: shivammathur/setup-php@v2
         with:
