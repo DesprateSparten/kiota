@@ -37,7 +37,7 @@ dependencies {
 
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.guava:guava:32.1.2-jre'
     api 'com.squareup.okhttp3:okhttp:4.11.0'
     api 'com.microsoft.kiota:kiota-abstractions:1.0.34'
 }
