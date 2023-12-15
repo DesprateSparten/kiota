@@ -28,7 +28,7 @@ jobs:
         env:
           USERNAME: ${{ secrets.PUBLISH_GH_USERNAME }}
           TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: drop
           path: |
