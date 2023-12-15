@@ -25,7 +25,7 @@ jobs:
       - name: Build SDK project
         run: ./gradlew --no-daemon build
         working-directory: ${{ env.relativePath }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: drop
           path: |
